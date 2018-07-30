@@ -158,3 +158,61 @@ service nfs start
 chkconfig rpcbind on
 chkconfig nfs on
 ```
+### Management Server Installation ###
+* Instal terlebih dahulu MySQL Server
+```
+yum -y install mysql-server
+```
+Atur file /etc/my.cnf pada [mysqld] section :
+```
+innodb_rollback_on_timeout=1
+innodb_lock_wait_timeout=600
+max_connections=350
+log-bin=mysql-bin
+binlog-format = 'ROW'
+```
+Restart mysqld :
+```
+service mysqld start
+chkconfig mysqld on
+```
+* MySQL connector Installation
+Buat file /etc/yum.repos.d/mysql.repo dengan aturan :
+```
+[mysql-connectors-community]
+name=MySQL Community connectors
+baseurl=http://repo.mysql.com/yum/mysql-connectors-community/el/$releasever/$basearch/
+enabled=1
+gpgcheck=1
+```
+* Import GPG public key dari MySQL:
+```
+rpm --import http://repo.mysql.com/RPM-GPG-KEY-mysql
+```
+* Install mysql-connector
+```
+yum install mysql-connector-python
+```
+* Instalasi management server
+```
+yum -y install cloudstack-management
+cloudstack-setup-databases cloud:password@localhost --deploy-as=root
+```
+Jika berhasil pesan seperti berikut akan muncul :
+```
+“CloudStack has successfully initialized the database.”
+```
+```
+cloudstack-setup-management
+```
+Jika servlet container adalah Tomcat7 maka argumen -tomcat7 harus digunakan.
+
+* System Template Setup
+CloudStack menggunakan angka sistem VM yang menyediakan fungsionalitas untuk mengakses console VM, menyediakan berbagai layanan jaringan, dan mengelola berbagai aspek storage. Selanjutnya perlu mendownload system VM Template dan mendeploynya. Management server termasuk script yang digunakan untuk memanipulasi system VMs images.
+```
+/usr/share/cloudstack-common/scripts/storage/secondary/cloud-install-sys-tmplt \
+-m /export/secondary \
+-u http://cloudstack.apt-get.eu/systemvm/4.6/systemvm64template-4.6.0-kvm.qcow2.bz2 \
+-h kvm -F
+```
+Managemen server selesai, selanjutnya menginstal hypervisor.
