@@ -1,4 +1,4 @@
-﻿# Apache-Cloudstack
+# Apache-Cloudstack
 
 ## Pengertian ##
 Apache CloudStack adalah aplikasi open source yang dirancang untuk membuat, mengelola dan mendeploy infrastruktur jaringan virtual machine. CloudStack digunakan oleh sejumlah penyedia layanan Public Cloud, Private Cloud, dan Hybrid Cloud. CloudStack menjadi solusi kebutuhan organisasi diantaranya ketersediaan compute orchestration, Network-as-a-Service, manajemen pengguna dan akun, native API, akuntansi sumber daya, dan UI tingkat satu.
@@ -266,3 +266,71 @@ Hilangkan comment pada perintah :
 ```
 lsmod | grep kvm
 ```
+
+____
+
+# Konfigurasi
+
+Seperti yang kami sebutkan sebelumnya, kami akan menggunakan grup keamanan untuk memberikan isolasi dan secara default yang menyiratkan bahwa kami akan menggunakan jaringan lapisan-2 datar. Ini juga berarti bahwa kesederhanaan pengaturan kami berarti bahwa kita dapat menggunakan penginstal cepat.
+
+### Akses UI
+
+Untuk mendapatkan akses ke antarmuka web CloudStack, arahkan browser Anda ke http://172.16.10.2:8080/client Nama pengguna default adalah ‘admin’, dan kata sandi defaultnya adalah ‘kata sandi’. Anda akan melihat layar splash yang memungkinkan Anda memilih beberapa opsi untuk mengatur CloudStack. Anda harus memilih opsi Lanjutkan dengan Pengaturan Dasar.
+
+Anda sekarang harus melihat prompt yang meminta Anda mengubah kata sandi untuk pengguna admin. Silakan lakukan.
+
+### Menyiapkan Zona
+
+Zona adalah entitas organisasi terbesar di CloudStack - dan kami akan membuatnya, ini seharusnya adalah layar yang Anda lihat di depan Anda sekarang. Dan bagi kami ada 5 buah informasi yang kami butuhkan.
+
+	Name - we will set this to the ever-descriptive ‘Zone1’ for our cloud.
+	Public DNS 1 - we will set this to 8.8.8.8 for our cloud.
+	Public DNS 2 - we will set this to 8.8.4.4 for our cloud.
+	Internal DNS1 - we will also set this to 8.8.8.8 for our cloud.
+	Internal DNS2 - we will also set this to 8.8.4.4 for our cloud.
+	
+### Catatan
+
+CloudStack membedakan antara DNS internal dan publik. DNS internal diasumsikan mampu menyelesaikan hostname internal saja, seperti nama DNS server NFS Anda. DNS publik disediakan untuk VM tamu untuk menyelesaikan alamat IP publik. Anda dapat memasukkan server DNS yang sama untuk kedua jenis, tetapi jika Anda melakukannya, Anda harus memastikan bahwa alamat IP internal dan publik dapat rute ke server DNS. Dalam kasus spesifik kami, kami tidak akan menggunakan nama apa pun untuk sumber daya secara internal, dan kami memang telah menetapkan untuk mencari sumber daya eksternal yang sama sehingga tidak menambahkan pengaturan namerserver ke daftar persyaratan kami.
+
+### Konfigurasi Pod
+
+Sekarang setelah kami menambahkan Zona, langkah berikutnya yang muncul adalah prompt untuk informasi memasukkan pod. Yang mencari beberapa barang.
+
+    Name - We’ll use Pod1 for our cloud.
+    Gateway - We’ll use 172.16.10.1 as our gateway
+    Netmask - We’ll use 255.255.255.0
+    Start/end reserved system IPs - we will use 172.16.10.10-172.16.10.20
+    Guest gateway - We’ll use 172.16.10.1
+    Guest netmask - We’ll use 255.255.255.0
+    Guest start/end IP - We’ll use 172.16.10.30-172.16.10.200
+
+### Cluster
+Sekarang setelah kami menambahkan Zona, kami hanya perlu menambahkan beberapa item lagi untuk mengonfigurasi gugus.
+
+    Name - We’ll use Cluster1
+    Hypervisor - Choose KVM
+    
+Anda harus diminta untuk menambahkan host pertama ke kluster Anda pada titik ini. Hanya beberapa bit informasi yang dibutuhkan.
+
+    Hostname - we’ll use the IP address 172.16.10.2 since we didn’t set up a DNS server.
+    Username - we’ll use root
+    Password - enter the operating system password for the root user
+
+### Primary Storage
+Dengan kluster Anda sekarang setup - Anda akan diminta untuk informasi penyimpanan primer. Pilih NFS sebagai tipe penyimpanan dan kemudian masukkan nilai berikut di bidang:
+
+    Name - We’ll use Primary1
+    Server - We’ll be using the IP address 172.16.10.2
+    Path - Well define /export/primary as the path we are using
+    
+
+### Secondary Storage
+Jika ini adalah zona baru, Anda akan dimintai informasi penyimpanan sekunder - isi sebagai berikut:
+    
+    NFS server - We’ll use the IP address 172.16.10.2
+    Path - We’ll use /export/secondary
+
+Sekarang, klik Luncurkan dan cloud Anda harus memulai penyetelan - mungkin perlu waktu beberapa menit tergantung pada kecepatan koneksi internet Anda untuk penyetelan yang akan diselesaikan.
+
+Itu saja, Anda selesai dengan pemasangan cloud CloudStack Apache Anda.
