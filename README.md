@@ -1,4 +1,4 @@
-# Apache-Cloudstack
+﻿# Apache-Cloudstack
 
 ## Pengertian ##
 Apache CloudStack adalah aplikasi open source yang dirancang untuk membuat, mengelola dan mendeploy infrastruktur jaringan virtual machine. CloudStack digunakan oleh sejumlah penyedia layanan Public Cloud, Private Cloud, dan Hybrid Cloud. CloudStack menjadi solusi kebutuhan organisasi diantaranya ketersediaan compute orchestration, Network-as-a-Service, manajemen pengguna dan akun, native API, akuntansi sumber daya, dan UI tingkat satu.
@@ -216,3 +216,53 @@ CloudStack menggunakan angka sistem VM yang menyediakan fungsionalitas untuk men
 -h kvm -F
 ```
 Managemen server selesai, selanjutnya menginstal hypervisor.
+
+# Instalasi dan Konfigurasi KVM
+
+## Instalasi
+
+Instalasi KVM bisa kita gunakan dengan perintah :
+
+```yum -y install cloudstack-agent```
+
+## Konfigurasi
+
+Ada 2 KVM yang dikonfigurasi, yaitu libvirt dan QEMU.
+
+**Konfigurasi QEMU**
+
+Kita hanya perlu mengedit QEMU VNC dengan cara mengedit ```/etc/libvirt/qemu.conf``` dan pastikan tiap line ada dan tidak ada commend
+
+```vnc_listen=0.0.0.0```
+
+**Konfigurasi Libvirt**
+
+CloudStack menggunakan libvirt untuk memanage  VM, sehingga libvirt harus terkonfigurasi secara benar. Libvirt adalah clount-agent dependen dan harus sudah di install.
+
+* Untuk migrasi secara live libvirt harus menerima unsecure TCP Connection. Kita perlu menonaktifkan libvirt untuk melakukan Multicast DNS advertising. Kedua setting settinga ini ada ```/etc/libvirt/libvirtd.conf```
+
+Set parameter menjadi :
+
+```
+listen_tls = 0
+listen_tcp = 1
+tcp_port = "16059"
+auth_tcp = "none"
+mdns_adv = 0
+```
+
+* Hidupkan  “listen_tcp” di libvirtd.conf tidak cukup, keta harus merubah parameters dengan mengedit ```/etc/sysconfig/libvirtd```
+
+Hilangkan comment pada perintah :
+
+```LIBVIRTD_ARGS="--listen"```
+
+* Kemudian restart libvirt
+
+```service libvirtd restart```
+
+* Untuk memastikan, kita cek apakah KVM sudah running di PC kita 
+
+```
+lsmod | grep kvm
+```
